@@ -14,14 +14,14 @@ class Lattice:
         self.connectivity = connectivity
 
     def reset_random_occupancy(self):
-        self.occupancy = np.zeros(self.Nsites)
+        self.occupancy = np.zeros(self.Nsites, dtype=np.int32)
         self.occupancy[np.random.choice(self.Nsites, self.Nparticles, replace=False)]=1
         # the order matters
-        self.particles = np.where(self.occupancy>0)[0]
+        self.particles = np.where(self.occupancy>0)[0].astype(dtype=np.int32)
 
     def reset_orientations(self):
         # same order as particles
-        self.orientation = np.random.randint(0,self.connectivity,size=self.Nparticles)
+        self.orientation = np.random.randint(0,self.connectivity,size=self.Nparticles,dtype=np.int32)
 
     def set_square_connectivity(self, Nx, Ny):
 
@@ -36,6 +36,7 @@ class Lattice:
             Ny)
 
         self.neighbor_table = neighbor_table.reshape(self.Nsites,self.connectivity)
+        self.neighbor_table_flat = neighbor_table.flatten();
 
     def neighbors(self, site):
         return self.neighbor_table[site]
@@ -63,37 +64,57 @@ class Lattice:
         x,y = np.unravel_index(self.particles,shape = (self.Nx, self.Ny))
         return x,y
 
-Nx = Ny = 40
-Np = int(0.2*Nx*Ny)
-tumble = 0.002
+    def c_move(self,tumble_probability):
+        _clattice._move(4,
+            self.Nparticles,
+            self.neighbor_table_flat.ctypes.data_as(c_int_p),
+            self.orientation.ctypes.data_as(c_int_p),
+            self.occupancy.ctypes.data_as(c_int_p),
+            self.particles.ctypes.data_as(c_int_p),
+            ctypes.c_double(tumble_probability)
+            )
+
+        assert len(self.particles)==self.Nparticles, "not ok"
+
+Nx = Ny = 100
+Np = int(0.1*Nx*Ny)
+tumble = 0.01
+speed = 2
 L = Lattice(Nx*Ny,Np)
 L.set_square_connectivity(Nx,Ny)
 L.reset_random_occupancy()
 L.reset_orientations()
 
 
-print(L.occupancy)
+L.c_move(tumble)
+# print(L.occupancy)
+
 # print(L.neighbor_table[])
 # print(L.neighbors(2))
 # print(L.particles)
 
+plt.rcParams["figure.autolayout"]=False
+fig, ax = plt.subplots(figsize=(6,6),)
+ax.set_facecolor('k')
 
-fig, ax = plt.subplots(figsize=(6,6))
-img, = plt.plot(*L.positions(),'.', ms=2)
+scat = plt.scatter(*L.positions(),c=L.orientation, s=Ny/80, cmap=plt.cm.Set2, alpha=0.9)
 
 def init():
     ax.set_xlim(0, Nx)
     ax.set_ylim(0,Ny)
     ax.set_aspect('equal', 'box')
-    return img,
+    return scat,
 def update(frame):
-    for k in range(100000):
-        L.move(tumble)
-    img.set_data(*L.positions())
-   
-    return img,
+    for k in range(speed):
+        L.c_move(tumble)
+    # scat.set_data(*L.positions())
+    scat.set_offsets(np.array([*L.positions()]).T)
+    scat.set_array(L.orientation)
+
+    return scat,
 
 
-ani = FuncAnimation(fig, update, frames=range(10000),init_func=init,
-                   blit=True)
-plt.show()
+# for l in range(3):
+    # L.c_move(tumble)
+ani = FuncAnimation(fig, update, frames=range(100),init_func=init,blit=True)
+ani.save('myAnimation.gif', writer='imagemagick', fps=6)

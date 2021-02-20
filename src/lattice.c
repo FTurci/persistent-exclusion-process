@@ -1,11 +1,23 @@
-// gcc -shared -W -o lattice.so -fPIC lattice.c
-#include "stdio.h"
+// gcc -shared -W -o lattice.so -fPIC lattice.c  pcg_basic.c
+
+#include <stdio.h>
+#include <time.h>
+#include <stdlib.h>
+
+// *Really* minimal PCG32 code / (c) 2014 M.E. O'Neill / pcg-random.org
+// Licensed under Apache License 2.0 (NO WARRANTY, etc. see website)
+
+#include "pcg_basic.h"
+
+
 
 void _construct_square_neighbor_table(int* table ,int Nx,int Ny){
-    
+
+    pcg32_srandom(42u, 54u); 
+
     const int connectivity = 4;
-    unsigned int lattice_index;
-    unsigned int u;
+    int lattice_index;
+    int u;
 
 
     for (int i=0;i<Nx;i++){
@@ -53,5 +65,69 @@ void _construct_square_neighbor_table(int* table ,int Nx,int Ny){
 
     }
 
+
+}
+
+void permutation(int* array, int size){
+    int j;
+    int copy;
+
+    for (int i=0; i<size;i++){
+        j = (int)pcg32_boundedrand(size);
+        copy = array[i];
+        array[i] = array[j];
+        array[j] = copy;
+    }
+}
+double uniform()
+{
+    return (double)pcg32_boundedrand(RAND_MAX) / (double)RAND_MAX ;
+}
+
+void _move( 
+    int coordination,
+    int nparticles, 
+    int* table,
+    int * orientation, 
+    int* occupancy, 
+    int* location,
+    double tumble_probability
+    ){
+
+    int p,o,oo,site,attempt;
+    double r;
+
+    int indices[nparticles];
+
+    for (int i = 0; i < nparticles; ++i) indices[i] = i;
+    
+    permutation(indices, nparticles);
+    
+
+    for (int i = 0; i < nparticles; ++i)
+    {   
+        // select a particle
+        p = indices[i];
+        // get its site
+        site = location[p];
+        // get its orientation
+        o = orientation[p];
+        // get destination site
+        attempt = table[site*coordination+o];
+
+        if (occupancy[attempt]==0){
+            occupancy[site] = 0;
+            occupancy[attempt] = 1;
+            location[p] = attempt;
+        }
+        r= uniform();
+        // printf("%g\n",r);
+        if (r<tumble_probability){
+            oo = (int)pcg32_boundedrand(coordination); 
+            // printf("old %d new %d\n",o,oo );
+            orientation[p] = oo;
+        }
+
+    }
 
 }
