@@ -91,43 +91,43 @@ void _move(
     int * orientation, 
     int* occupancy, 
     int* location,
-    double tumble_probability
-    ){
-
-    int p,o,oo,site,attempt;
-    double r;
+    double tumble_probability,
+    int repeat){
 
     int indices[nparticles];
 
     for (int i = 0; i < nparticles; ++i) indices[i] = i;
-    
-    permutation(indices, nparticles);
-    
 
-    for (int i = 0; i < nparticles; ++i)
-    {   
-        // select a particle
-        p = indices[i];
-        // get its site
-        site = location[p];
-        // get its orientation
-        o = orientation[p];
-        // get destination site
-        attempt = table[site*coordination+o];
+    for (int k=0; k<repeat; k++){
+        int p,o,oo,site,attempt;
+        double r;
+        permutation(indices, nparticles);
+        
 
-        if (occupancy[attempt]==0){
-            occupancy[site] = 0;
-            occupancy[attempt] = 1;
-            location[p] = attempt;
+        for (int i = 0; i < nparticles; ++i)
+        {   
+            // select a particle
+            p = indices[i];
+            // get its site
+            site = location[p];
+            // get its orientation
+            o = orientation[p];
+            // get destination site
+            attempt = table[site*coordination+o];
+
+            if (occupancy[attempt]==0){
+                occupancy[site] = 0;
+                occupancy[attempt] = 1;
+                location[p] = attempt;
+            }
+            r= uniform();
+            // printf("%g\n",r);
+            if (r<tumble_probability){
+                oo = (int)pcg32_boundedrand(coordination); 
+                // printf("old %d new %d\n",o,oo );
+                orientation[p] = oo;
+            }
+
         }
-        r= uniform();
-        // printf("%g\n",r);
-        if (r<tumble_probability){
-            oo = (int)pcg32_boundedrand(coordination); 
-            // printf("old %d new %d\n",o,oo );
-            orientation[p] = oo;
-        }
-
     }
-
 }

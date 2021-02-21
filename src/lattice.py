@@ -64,29 +64,30 @@ class Lattice:
         x,y = np.unravel_index(self.particles,shape = (self.Nx, self.Ny))
         return x,y
 
-    def c_move(self,tumble_probability):
+    def c_move(self,tumble_probability,speed):
         _clattice._move(4,
             self.Nparticles,
             self.neighbor_table_flat.ctypes.data_as(c_int_p),
             self.orientation.ctypes.data_as(c_int_p),
             self.occupancy.ctypes.data_as(c_int_p),
             self.particles.ctypes.data_as(c_int_p),
-            ctypes.c_double(tumble_probability)
+            ctypes.c_double(tumble_probability),
+            speed
             )
 
         assert len(self.particles)==self.Nparticles, "not ok"
 
-Nx = Ny = 100
+Nx = Ny = 800
 Np = int(0.1*Nx*Ny)
-tumble = 0.01
-speed = 2
+tumble = 0.001
+speed = 100
 L = Lattice(Nx*Ny,Np)
 L.set_square_connectivity(Nx,Ny)
 L.reset_random_occupancy()
 L.reset_orientations()
 
 
-L.c_move(tumble)
+# L.c_move(tumble)
 # print(L.occupancy)
 
 # print(L.neighbor_table[])
@@ -97,7 +98,7 @@ plt.rcParams["figure.autolayout"]=False
 fig, ax = plt.subplots(figsize=(6,6),)
 ax.set_facecolor('k')
 
-scat = plt.scatter(*L.positions(),c=L.orientation, s=Ny/80, cmap=plt.cm.Set2, alpha=0.9)
+scat = plt.scatter(*L.positions(),c=L.orientation, s=0.01, cmap=plt.cm.Set2, alpha=0.9)
 
 def init():
     ax.set_xlim(0, Nx)
@@ -105,8 +106,7 @@ def init():
     ax.set_aspect('equal', 'box')
     return scat,
 def update(frame):
-    for k in range(speed):
-        L.c_move(tumble)
+    L.c_move(tumble,speed)
     # scat.set_data(*L.positions())
     scat.set_offsets(np.array([*L.positions()]).T)
     scat.set_array(L.orientation)
@@ -117,4 +117,5 @@ def update(frame):
 # for l in range(3):
     # L.c_move(tumble)
 ani = FuncAnimation(fig, update, frames=range(100),init_func=init,blit=True)
-ani.save('myAnimation.gif', writer='imagemagick', fps=6)
+# ani.save('myAnimation.gif', writer='imagemagick', fps=6)
+plt.show()
