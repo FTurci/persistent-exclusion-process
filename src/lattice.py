@@ -75,3 +75,9 @@ class Lattice:
             )
 
         assert len(self.particles)==self.Nparticles, "not ok"
+
+    def image(self):
+        matrix = np.zeros((self.Nx, self.Ny))
+        x,y = self.positions()
+        matrix[x,y] = self.orientation
+        return matrix
