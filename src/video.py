@@ -5,7 +5,7 @@ from matplotlib.animation import FuncAnimation
 
 Nx = Ny = 128
 Np = int(0.05*Nx*Ny)
-tumble = 0.001
+tumble = 0.1
 speed = 10
 L = lattice.Lattice(Nx*Ny,Np)
 L.set_square_connectivity(Nx,Ny)
@@ -46,6 +46,6 @@ def update(frame):
 
 # for l in range(3):
     # L.c_move(tumble)
-ani = FuncAnimation(fig, update, frames=range(20),init_func=init,blit=True)
+ani = FuncAnimation(fig, update, frames=range(50),init_func=init,blit=True)
 ani.save('myAnimation.gif', writer='imagemagick', fps=6)
 plt.show()
