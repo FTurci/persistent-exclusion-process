@@ -11,7 +11,7 @@ for tumble in tqdm.tqdm(np.arange(0.001,1, 0.01)):
     print("Tumble", tumble)
     snapshot = int(1/tumble)
     speed = 10
-    niter = int(300*snapshot)
+    niter = int(1000*snapshot)
     print("Total number of iterations is",niter)
     L = lattice.Lattice(Nx*Ny,Np)
     L.set_square_connectivity(Nx,Ny)

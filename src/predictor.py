@@ -27,11 +27,12 @@ def data_load():
                 outputs.append(tumble)
 
     order = np.arange(len(outputs)).astype(int)
-    np.random.permutation(order)
+    order=np.random.permutation(order)
     return np.array(inputs)[order],np.array(outputs)[order],shape
 
 
 x,y,shape = data_load()
+print(y)
 # print (np.unique(result_data))
 last = 1000
 x_train, y_train = x[:-last], y[:-last]
@@ -40,32 +41,54 @@ x_val,y_val = x[-last:],y[-last:]
 
 print("data shape is", shape)
 print( "training_data shape is", x_train.shape)
-filters = 10
+filters = 1
 kernel_size = (3,3)
-model = Sequential([
-    keras.layers.Conv2D(
-        filters=filters,
-        kernel_size=kernel_size,
-        input_shape = shape,
-        padding="same",
-        data_format="channels_last",
-        use_bias=True,
-        activation=None
-        ),
+# model = Sequential([
+#     keras.layers.Conv2D(
+#         filters=filters,
+#         kernel_size=kernel_size,
+#         input_shape = shape,
+#         padding="same",
+#         data_format="channels_last",
+#         use_bias=True,
+#         activation=None
+#         ),
 
+#     keras.layers.Flatten(),
+
+#     # keras.layers.Dense(32, activation="relu"),
+#     # keras.layers.Dense(4, activation="relu"),
+#     keras.layers.Dense(1, activation="linear"),
+#     # keras.layers.Dense(1)
+#     # keras.layers.GlobalAveragePooling2D(),
+#     ]
+
+#     )
+
+
+model = keras.models.Sequential([
+    keras.layers.Conv2D(filters=5, kernel_size=(7,7), strides=(4,4), activation='relu', input_shape=shape),
+    keras.layers.BatchNormalization(),
+    keras.layers.MaxPool2D(pool_size=(3,3), strides=(2,2)),
+    # keras.layers.Conv2D(filters=1, kernel_size=(5,5), strides=(1,1), activation='relu', padding="same"),
+    # keras.layers.BatchNormalization(),
+    # keras.layers.MaxPool2D(pool_size=(3,3), strides=(2,2)),
+    # keras.layers.Conv2D(filters=10, kernel_size=(3,3), strides=(1,1), activation='relu', padding="same"),
+    # keras.layers.BatchNormalization(),
+    # keras.layers.Conv2D(filters=1, kernel_size=(3,3), strides=(1,1), activation='relu', padding="same"),
+    # keras.layers.BatchNormalization(),
+    # keras.layers.Conv2D(filters=1, kernel_size=(3,3), strides=(1,1), activation='relu', padding="same"),
+    # keras.layers.BatchNormalization(),
+    # keras.layers.MaxPool2D(pool_size=(3,3), strides=(2,2)),
     keras.layers.Flatten(),
-
-    # keras.layers.Dense(32, activation="relu"),
-    keras.layers.Dense(4, activation="relu"),
-    keras.layers.Dense(1, activation="linear"),
-    # keras.layers.Dense(1)
-    # keras.layers.GlobalAveragePooling2D(),
-    ]
-
-    )
-
-for layer in model.layers:
-    print(layer.output_shape)
+    # keras.layers.Dense(4096, activation='relu'),
+    # keras.layers.Dropout(0.5),
+    keras.layers.Dense(8, activation='relu'),
+    keras.layers.Dropout(0.5),
+    keras.layers.Dense(1, activation='linear')
+])
+# for layer in model.layers:
+#     print(layer.output_shape)
 # model.compile(loss="mean_squared_error", optimizer="SGD")
 model.compile(loss='mean_absolute_error', optimizer='SGD')
 # 
@@ -96,10 +119,12 @@ print("test loss, test acc:", results)
 #             test_images.append(img)
 
 
-#     prediction = model.predict(
-#         np.array(test_images)
-#         )
-
+prediction = model.predict(
+        x_val[:10]
+        )
+print("Prediction")
+for p,v in zip(prediction,y_val):
+    print(p[0],v)
 #     print("Predicted tumble",prediction.mean(),prediction.std(), "truth ",truth)
 
 # import matplotlib.pyplot as plt
