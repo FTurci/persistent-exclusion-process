@@ -1,6 +1,8 @@
-import ctypes
-import numpy as np
+"""Lattice class"""
 
+import ctypes
+
+import numpy as np
 
 _clattice = ctypes.CDLL("c/lattice.so")
 c_int_p = ctypes.POINTER(ctypes.c_int)
@@ -14,28 +16,32 @@ class Lattice:
 
     def reset_random_occupancy(self):
         self.occupancy = np.zeros(self.Nsites, dtype=np.int32)
-        self.occupancy[np.random.choice(self.Nsites, self.Nparticles, replace=False)]=1
+        self.occupancy[
+            np.random.choice(self.Nsites, self.Nparticles, replace=False)
+        ] = 1
         # the order matters
-        self.particles = np.where(self.occupancy>0)[0].astype(dtype=np.int32)
+        self.particles = np.where(self.occupancy > 0)[0].astype(dtype=np.int32)
 
     def reset_orientations(self):
         # same order as particles
-        self.orientation = np.random.randint(0,self.connectivity,size=self.Nparticles,dtype=np.int32)
+        self.orientation = np.random.randint(
+            0, self.connectivity, size=self.Nparticles, dtype=np.int32
+        )
 
     def set_square_connectivity(self, Nx, Ny):
-
-        assert Nx*Ny == self.Nsites, "Nx and Ny are incorrect."
+        assert Nx * Ny == self.Nsites, "Nx and Ny are incorrect."
         self.Nx = Nx
         self.Ny = Ny
-        neighbor_table = np.zeros((self.Nsites, self.connectivity),dtype=np.int32).flatten()
+        neighbor_table = np.zeros(
+            (self.Nsites, self.connectivity), dtype=np.int32
+        ).flatten()
 
         _clattice._construct_square_neighbor_table(
-            neighbor_table.ctypes.data_as(c_int_p), 
-            Nx,
-            Ny)
+            neighbor_table.ctypes.data_as(c_int_p), Nx, Ny
+        )
 
-        self.neighbor_table = neighbor_table.reshape(self.Nsites,self.connectivity)
-        self.neighbor_table_flat = neighbor_table.flatten();
+        self.neighbor_table = neighbor_table.reshape(self.Nsites, self.connectivity)
+        self.neighbor_table_flat = neighbor_table.flatten()
 
     def neighbors(self, site):
         return self.neighbor_table[site]
@@ -50,34 +56,34 @@ class Lattice:
         # print("orient",o)
         attempt = self.neighbors(site)[o]
         # print(pick,"attempt",attempt, self.occupancy[attempt])
-        if self.occupancy[attempt]==0:
+        if self.occupancy[attempt] == 0:
             self.occupancy[site] = 0
             self.occupancy[attempt] = 1
             self.particles[pick] = attempt
 
-        if np.random.uniform(0,1)<tumble_probability:
-            self.orientation[pick] = np.random.randint(0,self.connectivity)
-
+        if np.random.uniform(0, 1) < tumble_probability:
+            self.orientation[pick] = np.random.randint(0, self.connectivity)
 
     def positions(self):
-        x,y = np.unravel_index(self.particles,shape = (self.Nx, self.Ny))
-        return x,y
+        x, y = np.unravel_index(self.particles, shape=(self.Nx, self.Ny))
+        return x, y
 
-    def c_move(self,tumble_probability,speed):
-        _clattice._move(4,
+    def c_move(self, tumble_probability, speed):
+        _clattice._move(
+            4,
             self.Nparticles,
             self.neighbor_table_flat.ctypes.data_as(c_int_p),
             self.orientation.ctypes.data_as(c_int_p),
             self.occupancy.ctypes.data_as(c_int_p),
             self.particles.ctypes.data_as(c_int_p),
             ctypes.c_double(tumble_probability),
-            speed
-            )
+            speed,
+        )
 
-        assert len(self.particles)==self.Nparticles, "not ok"
+        assert len(self.particles) == self.Nparticles, "not ok"
 
     def image(self):
         matrix = np.zeros((self.Nx, self.Ny))
-        x,y = self.positions()
-        matrix[x,y] = self.orientation
+        x, y = self.positions()
+        matrix[x, y] = self.orientation
         return matrix
