@@ -7,8 +7,8 @@ In the folder `src` one can find all the code and the Makefile.
 
 To compile, just do
 
-```
-cd src
+```bash
+cd src/c
 make
 ```
 
