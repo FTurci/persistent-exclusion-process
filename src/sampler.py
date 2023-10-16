@@ -57,3 +57,6 @@ def main():
                             lat.image().astype(np.uint8), (roll, roll), axis=(0, 1)
                         ),
                     )
+
+if __name__ == "__main__":
+    main()
