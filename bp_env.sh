@@ -1,0 +1,13 @@
+#!/bin/bash
+
+for pkg in h5py tqdm matplotlib numpy keras tensorflow
+do
+    ins=$(pip3 list --format legacy | grep -c "$pkg")
+    if [ "$ins" -eq 1 ]
+    then
+        continue
+    fi
+	pip3 install --user "$pkg"
+done
+
+module load lang/gcc/12.3.0
