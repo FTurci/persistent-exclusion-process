@@ -14,7 +14,6 @@ import h5py
 import matplotlib.pyplot as plt
 import numpy as np
 
-# TODO: what is this??
 from stringato import extract_floats
 
 
