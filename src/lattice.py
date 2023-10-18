@@ -1,18 +1,18 @@
 """Lattice class"""
 
-import ctypes
+import ctypes #a library that provides C data types and allows calling functions in DLLs or shared libraries
 
 import numpy as np
 
-_clattice = ctypes.CDLL("c/lattice.so")
-c_int_p = ctypes.POINTER(ctypes.c_int)
+_clattice = ctypes.CDLL("c/lattice.so") #Compile Dynamic Link Libraries; we use this to load lattice.so (so = shared object; a DLL is a shared object that doesn't need to be there at compilation time; this is not relevant to interpreted languages like Python ?)
+c_int_p = ctypes.POINTER(ctypes.c_int) #set c_int_p as an int pointer
 
 
-class Lattice:
-    def __init__(self, Nsites, Nparticles, connectivity=4):
-        self.Nsites = Nsites
-        self.Nparticles = Nparticles
-        self.connectivity = connectivity
+class Lattice: #Lattice defines the class, of which particular instances are 'objects'
+    def __init__(self, Nsites, Nparticles, connectivity=4): #initialises object's attributes when initialising/defining an object
+        self.Nsites = Nsites #Nsites is the number of sites on lattice
+        self.Nparticles = Nparticles #Nparticles is the number of particles on lattice
+        self.connectivity = connectivity # 
 
     def reset_random_occupancy(self):
         self.occupancy = np.zeros(self.Nsites, dtype=np.int32)
@@ -29,6 +29,12 @@ class Lattice:
         )
 
     def set_square_connectivity(self, Nx, Ny):
+	'''
+	Program forces Nx,Ny dimensions to match number of lattice sites. Creates (and then flattens) a 2D array listing empty rows of Nsites and empty columns of connectivities; this is the list of neighbours that each site has. They are then filled by construct_square_neighbor_table. Presumably, the neighbour table links each specific lattice site with its neighbours for later examination.
+
+	Nx = number of sites in lattice along x direction
+	Ny = number of sites in lattice along y direction
+	'''
         assert Nx * Ny == self.Nsites, "Nx and Ny are incorrect."
         self.Nx = Nx
         self.Ny = Ny
@@ -39,11 +45,14 @@ class Lattice:
         _clattice._construct_square_neighbor_table(
             neighbor_table.ctypes.data_as(c_int_p), Nx, Ny
         )
-
+	#self.neighbor_table_flat = neighbor_table (why not do this instead of reflattening afterwards?
         self.neighbor_table = neighbor_table.reshape(self.Nsites, self.connectivity)
-        self.neighbor_table_flat = neighbor_table.flatten()
+        self.neighbor_table_flat = neighbor_table.flatten() #and delete this?
 
     def neighbors(self, site):
+	'''
+	Defines neighbour table attribute.
+	'''
         return self.neighbor_table[site]
 
     def move(self, tumble_probability):
