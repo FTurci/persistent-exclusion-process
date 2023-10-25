@@ -46,7 +46,7 @@ def main():
     df = pd.DataFrame()
     df["tumble"] = tumbles
     df["n_iter"] = iters
-    df["density"] = np.full_like(tumbles, density)
+    df["density"] = np.full_like(tumbles, args.density)
     df["speed"] = np.full_like(tumbles, speed, dtype=np.int_)
     os.system("touch ../data/sampler_records.csv")
     df.to_csv("../data/sampler_records.csv", mode="a", header=False)
@@ -63,7 +63,7 @@ def main():
         for _ in range(500):
             lat.c_move(tumble, speed)
         with h5py.File(
-            f"../data/dataset_tumble_{tumble:.3f}_{density}.h5", "w"
+            f"../data/dataset_tumble_{tumble:.3f}_{args.density}.h5", "w"
 
         ) as f_out:
             for iteration in tqdm.tqdm(range(iters[idx])):
