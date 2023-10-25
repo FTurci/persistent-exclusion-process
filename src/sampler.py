@@ -63,6 +63,7 @@ def main():
             lat.c_move(tumble, speed)
         with h5py.File(
             f"../data/dataset_tumble_{tumble:.3f}_{density}.h5", "w"
+
         ) as f_out:
             for iteration in tqdm.tqdm(range(iters[idx])):
                 lat.c_move(tumble, speed)
