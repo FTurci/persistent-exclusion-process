@@ -3,13 +3,15 @@
 
 Usage:
 -----
-./sampler.py
+./sampler.py -h
 
 """
 
 import h5py
 import numpy as np
 import tqdm
+
+import argparse
 
 import lattice
 
@@ -25,9 +27,14 @@ def main():
     - Create also a dataset for each "image", but rolled-over (from 0 to 10) (why?)
 
     """
+    parser = argparse.ArgumentParser(description="Generate some datasets")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("--odd", help="Run odd indices of whole logspace (default: False)", action="store_true", default=False)
     n_x = n_y = 128
     n_p = int(0.05 * n_x * n_y)
-    for tumble in tqdm.tqdm(np.logspace(-3, -1, 3, base=2)):
+    args = parser.parse_args()
+    start = 1 if args.odd else 0
+    for tumble in tqdm.tqdm(np.logspace(-6, -1, 10, base=2)[start::2]):
         print("Tumble", tumble)
         snapshot = int(1 / tumble)
         speed = 10
