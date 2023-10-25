@@ -10,6 +10,7 @@ Usage:
 import h5py
 import numpy as np
 import tqdm
+import pandas as pd
 
 import argparse
 
@@ -30,16 +31,29 @@ def main():
     parser = argparse.ArgumentParser(description="Generate some datasets")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--odd", help="Run odd indices of whole logspace (default: False)", action="store_true", default=False)
-    n_x = n_y = 128
-    n_p = int(0.05 * n_x * n_y)
     args = parser.parse_args()
+    
+    density = 0.05
+    speed = 10
+    n_x = n_y = 128
+    n_p = int(density * n_x * n_y)
+    
     start = 1 if args.odd else 0
-    for tumble in tqdm.tqdm(np.logspace(-6, -1, 10, base=2)[start::2]):
+    tumbles = np.logspace(-6, -1, 10, base=2)[start::2]
+    iters = 1000 * (1 / tumbles).astype(int)
+    
+    
+    df = pd.DataFrame()
+    df["tumble"] = tumbles
+    df["n_iter"] = iters
+    df["density"] = np.full_like(tumbles, density)
+    df["speed"] = np.full_like(tumbles, speed, dtype=np.int_)
+    df.to_csv("../data/sampler_records.csv")
+    
+    for idx, tumble in tqdm.tqdm(enumerate(tumbles)):
         print("Tumble", tumble)
         snapshot = int(1 / tumble)
-        speed = 10
-        n_iter = int(1000 * snapshot)
-        print("Total number of iterations is", n_iter)
+        print("Total number of iterations is", iters[idx])
         lat = lattice.Lattice(n_x * n_y, n_p)
         lat.set_square_connectivity(n_x, n_y)
         lat.reset_random_occupancy()
@@ -48,9 +62,9 @@ def main():
         for _ in range(500):
             lat.c_move(tumble, speed)
         with h5py.File(
-            f"../data/dataset_tumble_{np.log10(tumble):.4f}.h5", "w"
+            f"../data/dataset_tumble_{tumble:.3f}_{density}.h5", "w"
         ) as f_out:
-            for iteration in tqdm.tqdm(range(n_iter)):
+            for iteration in tqdm.tqdm(range(iters[idx])):
                 lat.c_move(tumble, speed)
                 if (iteration % snapshot) != 0:
                     continue
