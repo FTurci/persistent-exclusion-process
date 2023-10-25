@@ -49,7 +49,7 @@ def main():
     df["density"] = np.full_like(tumbles, args.density)
     df["speed"] = np.full_like(tumbles, speed, dtype=np.int_)
     if not os.path.isfile("../data/sampler_records.csv"):
-        os.system("echo ',,tumble,n_iter,density,speed' > ../data/sampler_records.csv")
+        os.system("echo ',tumble,n_iter,density,speed' > ../data/sampler_records.csv")
     df.to_csv("../data/sampler_records.csv", mode="a", header=False)
     
     for idx, tumble in tqdm.tqdm(enumerate(tumbles)):
