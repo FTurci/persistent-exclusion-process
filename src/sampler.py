@@ -13,6 +13,7 @@ import tqdm
 import pandas as pd
 
 import argparse
+import os
 
 import lattice
 
@@ -29,14 +30,13 @@ def main():
 
     """
     parser = argparse.ArgumentParser(description="Generate some datasets")
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument("--odd", help="Run odd indices of whole logspace (default: False)", action="store_true", default=False)
+    parser.add_argument("--density", help="Lattice density", type=float, required=True)
+    parser.add_argument("--odd", help="Run odd indices of whole logspace (default: False)", action="store_true", default=False)
     args = parser.parse_args()
     
-    density = 0.05
     speed = 10
     n_x = n_y = 128
-    n_p = int(density * n_x * n_y)
+    n_p = int(args.density * n_x * n_y)
     
     start = 1 if args.odd else 0
     tumbles = np.logspace(-6, -1, 10, base=2)[start::2]
@@ -48,7 +48,8 @@ def main():
     df["n_iter"] = iters
     df["density"] = np.full_like(tumbles, density)
     df["speed"] = np.full_like(tumbles, speed, dtype=np.int_)
-    df.to_csv("../data/sampler_records.csv")
+    os.system("touch ../data/sampler_records.csv")
+    df.to_csv("../data/sampler_records.csv", mode="a", header=False)
     
     for idx, tumble in tqdm.tqdm(enumerate(tumbles)):
         print("Tumble", tumble)
