@@ -45,17 +45,19 @@ def main():
         with h5py.File(file, "r") as fin:
             count = 0
             for _, val in fin.items():
-                img = val
-                inputs.append(img)
-                outputs.append(tumble)
-                plt.matshow(img, cmap=cmap)
-                plt.title(str(tumble))
-                plt.colorbar()
-                plt.show()
+                if count == 49:
+                    img = val
+                    inputs.append(img)
+                    outputs.append(tumble)
+                    plt.matshow(img, cmap=cmap)
+                    plt.title(str(tumble))
+                    plt.colorbar()
+                    plt.show()
+                    print(np.unique(img))
                 count += 1
-                print(np.unique(img))
-                if count > 0:
-                    break
+                
+                #if count > 0:
+                #    break
 
 
 if __name__ == "__main__":
