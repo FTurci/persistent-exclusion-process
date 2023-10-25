@@ -60,7 +60,7 @@ class Lattice:
         self.occupancy = np.zeros(self.n_sites, dtype=np.int32)
         self.particles = np.ndarray
         self.orientation = np.zeros(self.n_particles, dtype=np.int32)
-        self.neighbor_table = np.zeros(self.n_sites, connectivity)
+        self.neighbor_table = np.zeros((self.n_sites, connectivity))
         self.neighbor_table_flat = np.ndarray
         self.n_x = 0
         self.n_y = 0
