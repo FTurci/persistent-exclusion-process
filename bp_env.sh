@@ -1,13 +1,13 @@
 #!/bin/bash
 
-for pkg in h5py tqdm matplotlib numpy keras protobuf==3.6.1 tensorflow
+module load lang/gcc/12.3.0
+module load lang/python/3.9.13
+
+for pkg in h5py tqdm matplotlib numpy keras pandas tensorflow
 do
     ins=$(pip3 list --format legacy | grep -c "$pkg")
-    if [ "$ins" -eq 1 ]
+    if [ "$ins" -ne 1 ]
     then
-        continue
+	  pip3 install --user "$pkg"
     fi
-	pip3 install --user "$pkg"
 done
-
-module load lang/gcc/12.3.0
