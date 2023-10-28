@@ -7,13 +7,13 @@ Usage:
 
 """
 
-import h5py
-import numpy as np
-import tqdm
-import pandas as pd
-
 import argparse
 import os
+
+import h5py
+import numpy as np
+import pandas as pd
+import tqdm
 
 import lattice
 
@@ -31,18 +31,22 @@ def main():
     """
     parser = argparse.ArgumentParser(description="Generate some datasets")
     parser.add_argument("--density", help="Lattice density", type=float, required=True)
-    parser.add_argument("--odd", help="Run odd indices of whole logspace (default: False)", action="store_true", default=False)
+    parser.add_argument(
+        "--odd",
+        help="Run odd indices of whole logspace (default: False)",
+        action="store_true",
+        default=False,
+    )
     args = parser.parse_args()
-    
+
     speed = 10
     n_x = n_y = 128
     n_p = int(args.density * n_x * n_y)
-    
+
     start = 1 if args.odd else 0
     tumbles = np.logspace(-6, -1, 10, base=2)[start::2]
     iters = 1000 * (1 / tumbles).astype(int)
-    
-    
+
     df = pd.DataFrame()
     df["tumble"] = tumbles
     df["n_iter"] = iters
@@ -51,7 +55,7 @@ def main():
     if not os.path.isfile("../data/sampler_records.csv"):
         os.system("echo ',tumble,n_iter,density,speed' > ../data/sampler_records.csv")
     df.to_csv("../data/sampler_records.csv", mode="a", header=False)
-    
+
     for idx, tumble in tqdm.tqdm(enumerate(tumbles)):
         print("Tumble", tumble)
         snapshot = int(1 / tumble)
@@ -65,7 +69,6 @@ def main():
             lat.c_move(tumble, speed)
         with h5py.File(
             f"../data/dataset_tumble_{tumble:.3f}_{args.density}.h5", "w"
-
         ) as f_out:
             for iteration in tqdm.tqdm(range(iters[idx])):
                 lat.c_move(tumble, speed)
@@ -81,6 +84,7 @@ def main():
                             lat.image().astype(np.uint8), (roll, roll), axis=(0, 1)
                         ),
                     )
+
 
 if __name__ == "__main__":
     main()
