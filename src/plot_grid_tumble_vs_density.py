@@ -59,7 +59,9 @@ def main():
         for jdx in range(3):
             axis = fig.add_subplot(gspec[idx, jdx], autoscale_on=False)
             with h5py.File(files[ctr], "r") as fin:
-                img = list(fin.items())[49][1]
+                key_list = list(fin.keys())
+                iter_n = get_ds_iters(key_list)
+                img = fin[f"conf_{iter_n[-2]}"]
                 axis.matshow(img, cmap=cmap)
             axis.set_xlim((0, 120))
             axis.set_ylim((0, 120))
@@ -69,7 +71,7 @@ def main():
                 axis.set_xticklabels([])
             ctr += 1
     fig.supylabel(r"Tumbling rate, $\alpha$")
-    fig.supxlabel(fr"Density, $\phi / \rm unit^{{-2}}$")
+    fig.supxlabel(r"Density, $\phi / \rm unit^{{-2}}$")
     fig.savefig("../plots/grid.pdf")
     fig.savefig("../plots/grid.png")
 
