@@ -39,7 +39,7 @@ def main():
     plot_configs = get_plot_configs()
     plot_configs["xtick.labelsize"] = 8
     plot_configs["ytick.labelsize"] = 8
-    plt.rcParams.update(get_plot_configs())
+    plt.rcParams.update(plot_configs)
     fig = plt.figure(figsize=(9 * 3 / 5, 9), constrained_layout=True)
     gspec = fig.add_gridspec(5, 3, wspace=0.15, hspace=0.15)
     cmap = plt.cm.get_cmap("gnuplot", 5)
@@ -69,7 +69,7 @@ def main():
                 axis.set_xticklabels([])
             ctr += 1
     fig.supylabel(r"Tumbling rate, $\alpha$")
-    fig.supxlabel(fr"Density, $\phi / \rm unit^{-2}$")
+    fig.supxlabel(fr"Density, $\phi / \rm unit^{{-2}}$")
     fig.savefig("../plots/grid.pdf")
     fig.savefig("../plots/grid.png")
 
