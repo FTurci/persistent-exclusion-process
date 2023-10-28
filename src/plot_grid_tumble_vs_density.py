@@ -65,8 +65,8 @@ def main():
             if idx != 0:
                 axis.set_xticklabels([])
             ctr += 1
-    # fig.supylabel(r"Tumbling rate, $\alpha$")
-    # fig.supxlabel(r"Density, $\phi / \textrm{unit}^{-2}$")
+    fig.supylabel(r"Tumbling rate, $\alpha$")
+    fig.supxlabel(r"Density, $\phi / \textrm{unit}^{-2}$")
     fig.savefig("../plots/grid.pdf")
     fig.savefig("../plots/grid.png")
 
