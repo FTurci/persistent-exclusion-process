@@ -8,12 +8,20 @@ Usage:
 
 """
 import glob
+import re
 
 import h5py
 import matplotlib.pyplot as plt
 
 from plot_utils import get_plot_configs
 from stringato import extract_floats
+
+def get_ds_iters(key_list: list):
+    iter_n = []
+    for val in key_list:
+        if re.search("^conf_\d+$", val):
+            iter_n.append(int(val[5:]))
+    return sorted(iter_n)
 
 
 def main():
