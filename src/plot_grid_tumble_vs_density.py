@@ -36,6 +36,9 @@ def main():
     img = img.reshape((img.shape[0], img.shape[1]))
     shape = img.shape
     """
+    plot_configs = get_plot_configs()
+    plot_configs["xtick.labelsize"] = 8
+    plot_configs["ytick.labelsize"] = 8
     plt.rcParams.update(get_plot_configs())
     fig = plt.figure(figsize=(9 * 3 / 5, 9), constrained_layout=True)
     gspec = fig.add_gridspec(5, 3, wspace=0.15, hspace=0.15)
