@@ -8,29 +8,13 @@ Usage:
 
 """
 import glob
-import re
 
 import h5py
 import matplotlib.pyplot as plt
 
 from plot_utils import get_plot_configs
 from stringato import extract_floats
-
-
-def get_ds_iters(key_list: list) -> list:
-    """
-    Get all the unique iteration numbers
-
-    :param key_list: a list of all the possible dataset keys/names
-
-    :returns: a list of unique iterations
-    """
-    iter_n = []
-    for val in key_list:
-        if re.search("^conf_\d+$", val):
-            iter_n.append(int(val[5:]))
-    return sorted(iter_n)
-
+from utils import get_ds_iters
 
 def main():
     """
