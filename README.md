@@ -26,3 +26,16 @@ make
 ```
 
 In the folder `src` one can find all the Python scripts.
+
+## Generating dataset
+
+```bash
+python3 sampler.py --density <DENSITY>
+```
+
+Add the flag `--odd` to produce the odd set of tumbling rate. Run both with and
+without the flag to generate the full dataset.
+
+## Plotting scripts
+
+TODO
