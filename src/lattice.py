@@ -253,5 +253,5 @@ class Lattice:
         """
         matrix = np.zeros((self.n_x, self.n_y))
         x_pos, y_pos = self.positions()
-        matrix[x_pos, y_pos] = self.orientation
+        matrix[x_pos, y_pos] = self.orientation + 1
         return matrix
