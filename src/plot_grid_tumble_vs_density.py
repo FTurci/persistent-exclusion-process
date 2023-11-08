@@ -1,10 +1,9 @@
-#!/usr/bin/env python
 """
 Display lattice using pyplot
 
 Usage:
 -----
-./view.py
+./plot_grid_tumble_vs_density.py -h
 
 """
 import argparse
@@ -53,16 +52,18 @@ def main():
     text_kwrgs = {
         "bbox": {"boxstyle": "round", "facecolor": "white", "alpha": 0.5},
         "ha": "right",
+        "fontsize": "xx-small",
+        "fontfamily": "serif"
     }
     for idx in range(5):
         for jdx in range(3):
-            axis = fig.add_subplot(gspec[idx, jdx], autoscale_on=False)
+            axis = fig.add_subplot(gspec[idx, jdx])
             with h5py.File(files[ctr], "r") as fin:
                 key_list = list(fin.keys())
                 iter_n = get_ds_iters(key_list)
                 img = fin[f"conf_{iter_n[-1]}"]
                 text_kwrgs["s"] = r"$\alpha = {}, \phi = {}$".format(
-                    files[ctr][25:30], files[ctr][31:35]
+                    files[ctr][23:28], files[ctr][29:33]
                 )
                 if args.csize:
                     kernel = [[0, 1, 0], [1, 1, 1], [0, 1, 0]]
@@ -91,13 +92,13 @@ def main():
                 else:
                     axis.matshow(img, cmap=cmap)
                     axis.text(
-                        y=-0.1,
+                        y=-0.14,
                         x=0.96,
                         transform=axis.transAxes,
                         **text_kwrgs,
                     )
-            axis.set_xlim((0, 120))
-            axis.set_ylim((0, 120))
+                    axis.set_xlim((0, 120))
+                    axis.set_ylim((0, 120))
             if jdx != 0:
                 axis.set_yticklabels([])
             if idx != 0:
