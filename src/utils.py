@@ -35,7 +35,7 @@ def get_mean_orientation(file) -> list:
     iter_n = get_ds_iters(key_list)
     ori = []
     ori_acm = []
-    for idx, val in enumerate(iter_n):
+    for _, val in enumerate(iter_n):
         sshot = np.array(hf[f"conf_{val}"]).flatten()
         avg_ori = np.average(sshot[np.where(sshot != 0)[0]] - 1)
         ori.append(avg_ori)
