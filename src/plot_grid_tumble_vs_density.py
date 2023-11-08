@@ -7,42 +7,37 @@ Usage:
 ./view.py
 
 """
+import argparse
 import glob
 
 import h5py
 import matplotlib.pyplot as plt
+import numpy as np
+from cmcrameri import cm
+from scipy import ndimage
 
 from plot_utils import get_plot_configs
 from stringato import extract_floats
 from utils import get_ds_iters
 
+
 def main():
-    """
-    Go through all dataset files and update viewport iteratively
-
-    Explanation
-    -----------
-    - For each file in the dataset, load in as hdf5 file (dict)
-    - Tumbling information is at the top of the file, This goes into `outputs` (list)
-      and is used as plot title
-    - Value of each item in the hdf5 dict is parsed as 2d array into `matshow`
-    - Only does it once (breaks when `count > 0`)
-
-    Commented code
-    --------------
-    plt.figure(figsize=(8,8))
-    img /=img.max()
-    img = (img>0).astype(float)
-    img = img.reshape((img.shape[0], img.shape[1]))
-    shape = img.shape
-    """
+    """Make a grid of snapshops of the last iteration"""
+    parser = argparse.ArgumentParser(description="Generate some datasets")
+    parser.add_argument(
+        "--csize",
+        help="Plot cluster size distribution instead",
+        default=False,
+        action="store_true",
+    )
+    args = parser.parse_args()
     plot_configs = get_plot_configs()
     plot_configs["xtick.labelsize"] = 8
     plot_configs["ytick.labelsize"] = 8
     plt.rcParams.update(plot_configs)
     fig = plt.figure(figsize=(9 * 3 / 5, 9), constrained_layout=True)
     gspec = fig.add_gridspec(5, 3, wspace=0.15, hspace=0.15)
-    cmap = plt.cm.get_cmap("gnuplot", 5)
+    cmap = plt.get_cmap(name="cmc.bilbaoS", lut=5)
     files = glob.glob("../data/dataset*")
     stuff = []
     for file in files:
@@ -61,8 +56,37 @@ def main():
             with h5py.File(files[ctr], "r") as fin:
                 key_list = list(fin.keys())
                 iter_n = get_ds_iters(key_list)
-                img = fin[f"conf_{iter_n[-2]}"]
-                axis.matshow(img, cmap=cmap)
+                img = fin[f"conf_{iter_n[-1]}"]
+                if args.csize:
+                    kernel = [[1, 1, 1], [1, 1, 1], [1, 1, 1]]
+                    labelled, _ = ndimage.label(img, structure=kernel)
+                    cluster_sizes = np.bincount(labelled.flatten())[1:]
+                    min_c = cluster_sizes.min()
+                    max_c = cluster_sizes.max()
+                    bin_edges = np.linspace(min_c, max_c, 100)
+                    counts, _ = np.histogram(
+                        cluster_sizes, bins=bin_edges, density=True
+                    )
+                    axis.scatter(
+                        bin_edges[:-1],
+                        counts,
+                        edgecolor=(0, 0, 0, 1),
+                        facecolor=(0, 0, 0, 0.3),
+                    )
+                    axis.set_yscale("log"), axis.set_xscale("log")
+                    axis.text(
+                        y=0.89,
+                        x=0.96,
+                        transform=axis.transAxes,
+                        bbox=dict(boxstyle="round", facecolor="white", alpha=0.5),
+                        s="$\alpha = {}, \phi = {}$".format(
+                            files[ctr][25:30], files[ctr][31:35]
+                        ),
+                        ha="right",
+                    )
+                    fig.supxlabel("Cluster size")
+                else:
+                    axis.matshow(img, cmap=cmap)
             axis.set_xlim((0, 120))
             axis.set_ylim((0, 120))
             if jdx != 0:
@@ -70,10 +94,9 @@ def main():
             if idx != 0:
                 axis.set_xticklabels([])
             ctr += 1
-    fig.supylabel(r"Tumbling rate, $\alpha$")
-    fig.supxlabel(r"Density, $\phi / \rm unit^{{-2}}$")
-    fig.savefig("../plots/grid.pdf")
-    fig.savefig("../plots/grid.png")
+    name = "csize" if args.csize else "default"
+    fig.savefig(f"../plots/{name}.pdf")
+    fig.savefig(f"../plots/{name}.png")
 
 
 if __name__ == "__main__":
