@@ -50,6 +50,10 @@ def main():
             continue
         files.append(f"../data/dataset_tumble_{pair[0]:.3f}_{pair[1]}.h5")
     ctr = 0
+    text_kwrgs = {
+        "bbox": {"boxstyle": "round", "facecolor": "white", "alpha": 0.5},
+        "ha": "right",
+    }
     for idx in range(5):
         for jdx in range(3):
             axis = fig.add_subplot(gspec[idx, jdx], autoscale_on=False)
@@ -57,8 +61,11 @@ def main():
                 key_list = list(fin.keys())
                 iter_n = get_ds_iters(key_list)
                 img = fin[f"conf_{iter_n[-1]}"]
+                text_kwrgs["s"] = r"$\alpha = {}, \phi = {}$".format(
+                    files[ctr][25:30], files[ctr][31:35]
+                )
                 if args.csize:
-                    kernel = [[1, 1, 1], [1, 1, 1], [1, 1, 1]]
+                    kernel = [[0, 1, 0], [1, 1, 1], [0, 1, 0]]
                     labelled, _ = ndimage.label(img, structure=kernel)
                     cluster_sizes = np.bincount(labelled.flatten())[1:]
                     min_c = cluster_sizes.min()
@@ -78,15 +85,17 @@ def main():
                         y=0.89,
                         x=0.96,
                         transform=axis.transAxes,
-                        bbox=dict(boxstyle="round", facecolor="white", alpha=0.5),
-                        s="$\alpha = {}, \phi = {}$".format(
-                            files[ctr][25:30], files[ctr][31:35]
-                        ),
-                        ha="right",
+                        **text_kwrgs,
                     )
                     fig.supxlabel("Cluster size")
                 else:
                     axis.matshow(img, cmap=cmap)
+                    axis.text(
+                        y=-0.1,
+                        x=0.96,
+                        transform=axis.transAxes,
+                        **text_kwrgs,
+                    )
             axis.set_xlim((0, 120))
             axis.set_ylim((0, 120))
             if jdx != 0:
