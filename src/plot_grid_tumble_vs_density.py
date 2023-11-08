@@ -99,10 +99,10 @@ def main():
                     )
                     axis.set_xlim((0, 120))
                     axis.set_ylim((0, 120))
-            if jdx != 0:
-                axis.set_yticklabels([])
-            if idx != 0:
-                axis.set_xticklabels([])
+                    if jdx != 0:
+                        axis.set_yticklabels([])
+                    if idx != 0:
+                        axis.set_xticklabels([])
             ctr += 1
     name = "csize" if args.csize else "default"
     fig.savefig(f"../plots/{name}.pdf")
