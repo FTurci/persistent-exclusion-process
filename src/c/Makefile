@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-shared -W -O3
+CFLAGS=-shared -W -O3 -fPIC
 SRC=lattice.c pcg_basic.c
 OBJ=lattice.so
 
