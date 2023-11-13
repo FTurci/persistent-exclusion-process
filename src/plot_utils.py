@@ -1,5 +1,6 @@
 """Plot utilities"""
 
+
 def get_plot_configs() -> dict:
     """Get the configuration for pyplot
 
@@ -15,6 +16,7 @@ def get_plot_configs() -> dict:
         "ytick.labelsize": 12,
         "legend.fontsize": 12,
         "font.family": "serif",
-        # "font.sans-serif": ["Computer Modern Roman"],
+        "font.sans-serif": ["serif"],
+        "mathtext.fontset": "dejavuserif",
         # "text.usetex": True,
     }

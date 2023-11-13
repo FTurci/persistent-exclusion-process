@@ -34,8 +34,8 @@ def main():
     plot_configs["xtick.labelsize"] = 8
     plot_configs["ytick.labelsize"] = 8
     plt.rcParams.update(plot_configs)
-    fig = plt.figure(figsize=(9 * 3 / 5, 9), constrained_layout=True)
-    gspec = fig.add_gridspec(5, 3, wspace=0.15, hspace=0.15)
+    fig = plt.figure(figsize=(9, 9), constrained_layout=True)
+    gspec = fig.add_gridspec(3, 3, wspace=0.15, hspace=0.15)
     cmap = plt.get_cmap(name="cmc.bilbaoS", lut=5)
     files = glob.glob("../data/dataset*")
     stuff = []
@@ -45,17 +45,12 @@ def main():
         stuff.append((tumble, density))
     files = []
     for idx, pair in enumerate(sorted(stuff)[::2]):
-        if idx % 5 not in (0, 2, 4):
+        if idx % 2 != 0 or idx % 5 not in (0, 2, 4):
             continue
         files.append(f"../data/dataset_tumble_{pair[0]:.3f}_{pair[1]}.h5")
     ctr = 0
-    text_kwrgs = {
-        "bbox": {"boxstyle": "round", "facecolor": "white", "alpha": 0.5},
-        "ha": "right",
-        "fontsize": "xx-small",
-        "fontfamily": "serif"
-    }
-    for idx in range(5):
+    text_kwrgs = {"ha": "right", "fontsize": "xx-small", "fontfamily": "serif"}
+    for idx in range(3):
         for jdx in range(3):
             axis = fig.add_subplot(gspec[idx, jdx])
             with h5py.File(files[ctr], "r") as fin:
@@ -86,6 +81,7 @@ def main():
                         y=0.89,
                         x=0.96,
                         transform=axis.transAxes,
+                        bbox={"boxstyle": "round", "facecolor": "white", "alpha": 0.5},
                         **text_kwrgs,
                     )
                     fig.supxlabel("Cluster size")
