@@ -31,8 +31,8 @@ def main():
     )
     args = parser.parse_args()
     plot_configs = get_plot_configs()
-    plot_configs["xtick.labelsize"] = 8
-    plot_configs["ytick.labelsize"] = 8
+    plot_configs["xtick.labelsize"] = 12
+    plot_configs["ytick.labelsize"] = 12
     plt.rcParams.update(plot_configs)
     fig = plt.figure(figsize=(9, 9), constrained_layout=True)
     gspec = fig.add_gridspec(3, 3, wspace=0.15, hspace=0.15)
@@ -49,7 +49,7 @@ def main():
             continue
         files.append(f"../data/dataset_tumble_{pair[0]:.3f}_{pair[1]}.h5")
     ctr = 0
-    text_kwrgs = {"ha": "right", "fontsize": "xx-small", "fontfamily": "serif"}
+    text_kwrgs = {"ha": "right", "fontsize": "medium", "fontfamily": "serif"}
     for idx in range(3):
         for jdx in range(3):
             axis = fig.add_subplot(gspec[idx, jdx])
