@@ -7,10 +7,12 @@ import cmcrameri #for different cmaps
 
 relmaxclustersizes1 = [] #relative max cluster sizes
 relmaxclustersizes2 = []
+relmaxclustersizes3 = []
+relmaxclustersizes4 = []
+relmaxclustersizes5 = []
 
-Pt=0.157 #tumble probability
-Pt_array = [0.016,0.157]
-rho_array = [0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95]
+Pt_array = [0.016,0.034,0.073,0.157,0.340] #tumble probability values
+rho_array = [0.025,0.05,0.075,0.1,0.125,0.15,0.175,0.2,0.225,0.25,0.275,0.3,0.325,0.35,0.375,0.4,0.425,0.45,0.475,0.5,0.525,0.55,0.575,0.6,0.625,0.65,0.675,0.7,0.725,0.75,0.775,0.8,0.825,0.85,0.875,0.9,0.925,0.95,0.975] #density values
 
 i=0
 for Pt in Pt_array:
@@ -32,22 +34,34 @@ for Pt in Pt_array:
 
         map_size = 128*128
         ratio = biggest_cluster/map_size
-        percentage = ratio*100
         if i == 0:
-            relmaxclustersizes1.append(percentage)
-        else:
-            relmaxclustersizes2.append(percentage)
+            relmaxclustersizes1.append(ratio)
+        elif i == 1:
+            relmaxclustersizes2.append(ratio)
+        elif i == 2:
+            relmaxclustersizes3.append(ratio)
+        elif i == 3:
+            relmaxclustersizes4.append(ratio)
+        elif i == 4:
+            relmaxclustersizes5.append(ratio)
     i+=1
 
-fig, (ax1,ax2) = plt.subplots(2,1,figsize = (10,6))
-ax1.scatter(rho_array,relmaxclustersizes1)
-ax1.set_xlabel(r"System Density $\rho$")
-ax1.set_ylabel("Biggest Cluster Percentage")
-ax1.set_title(r"Biggest Cluster Sizes Relative to System Size Against System Density for Tumbling Rate 0.016")
-ax2.scatter(rho_array,relmaxclustersizes2)
-ax2.set_xlabel(r"System Density $\rho$")
-ax2.set_ylabel ("Biggest Cluster Percentage")
-ax2.set_title("Biggest Cluster Sizes Relative to System Size Against System Density for Tumbling Rate 0.157")
+fig, ax = plt.subplots(5,1,figsize = (10,16))
+ax.flatten()
+ax[0].scatter(rho_array,relmaxclustersizes1)
+ax[1].scatter(rho_array,relmaxclustersizes2)
+ax[2].scatter(rho_array,relmaxclustersizes3)
+ax[3].scatter(rho_array,relmaxclustersizes4)
+ax[4].scatter(rho_array,relmaxclustersizes5)
+
+for i in [0,1,2,3,4]:
+    ax[i].set_xlabel(r"$\rho$")
+    ax[i].set_ylabel("Ratio")
+    ax[i].set_title("Tumbling Rate {}".format(Pt_array[i]))
+plt.suptitle("Biggest Cluster Sizes Relative to System Size Against System Density for Different Tumbling Rates")
+fig.tight_layout()
+plt.subplots_adjust(top=0.95)
+plt.savefig("biggest-cluster-sizes.png")
 plt.show()
 
 
