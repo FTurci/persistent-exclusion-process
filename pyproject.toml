@@ -1,0 +1,9 @@
+[tool.mypy]
+ignore_missing_imports = true
+
+[tool.pylint.MAIN]
+init-hook = """
+try: import pylint_venv
+except ImportError: pass
+else: pylint_venv.inithook(force_venv_activation=True)
+"""

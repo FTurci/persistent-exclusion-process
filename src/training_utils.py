@@ -1,39 +1,38 @@
-#!/usr/bin/env python3
-
 import contextlib
 import glob
 import re
 
 import h5py
 import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
 import numpy as np
+import pandas as pd
+import seaborn as sns
 import tensorflow as tf
-from cmcrameri import cm
-from keras import backend as K
 from scipy.stats import pearsonr
-from tensorflow import keras
 from tensorflow.keras.layers import (
-    AveragePooling2D,
     BatchNormalization,
     Conv2D,
     Dense,
     Dropout,
     Flatten,
     GlobalAveragePooling2D,
-    LeakyReLU,
     MaxPooling2D,
-    Normalization,
     ReLU,
 )
 from tensorflow.keras.models import Sequential
+
+from src.plot_utils import get_plot_configs
 
 
 def extract_floats(string):
     return re.findall(r"[-+]?\d*\.\d+|\d+", string)
 
 
-def data_load(alphas, densities, orientation=True):
+def data_load(
+    alphas=np.logspace(-6, -1, 10, base=2),
+    densities=np.arange(0, 0.55, 0.05),
+    orientation=True,
+):
     files = []
     for alp in alphas:
         for val in densities:
@@ -82,23 +81,32 @@ def split_dataset(x, y, last=2000):
 
 def predict_and_plot(model, x_val, y_val):
     prediction = model.predict(x_val)
-    bins = np.logspace(-6, -1, 10, base=2) * 0.85
     v = prediction.T[0]
-    fig, ax = plt.subplots()
-    ax.scatter(y_val, v, c="k", alpha=0.25)
-    ax.scatter(np.unique(y_val), np.unique(y_val), marker="_", color="r", s=200)
 
-    ax.set_xscale("log")
-    ax.get_xaxis().set_major_formatter(ticker.ScalarFormatter())
-    ax.set_xticks(np.unique(y_val))
+    plot_configs = get_plot_configs()
+    plot_configs['axes.facecolor'] = [.96,.96,.96,1]
+    plot_configs['figure.facecolor'] = [.98,.98,.98,1]
+    plt.rcParams.update(plot_configs)
+    sns.set(rc=plot_configs)
 
-    ax.set_facecolor([0.98, 0.98, 0.98, 1])
+    df = pd.DataFrame()
+    df.insert(0, "predicted", np.abs(v - y_val))
+    df.insert(1, "actual", y_val)
 
-    for val in bins:
-        ax.axvline(val, alpha=0.05, c="k")
-
-    ax.set_xlabel("Input turning rate")
-    ax.set_ylabel("Predicted turning rate")
+    fig, ax = plt.subplots(figsize=(9, 6))
+    sns.violinplot(
+        ax=ax,
+        data=df,
+        x="actual",
+        y="predicted",
+        color="w",
+        alpha=0.7,
+        density_norm="width",
+        linewidth=1,
+        inner="box",
+        inner_kws={"box_width": 4, "color": "0.2"},
+    )
+    ax.set(xlabel=r"Tumbling rates, $\alpha$", ylabel=r"Absolute error, $|y_p - y_a|$")
 
     std = []
     overlap = []
@@ -137,7 +145,7 @@ def make_net(shape):
     model.add(ReLU())
     model.add(BatchNormalization())
 
-    model.add(Conv2D(filters=4, kernel_size=(4, 4), padding="same"))
+    model.add(Conv2D(filters=4, kernel_size=(5, 5), padding="same"))
     model.add(MaxPooling2D(pool_size=(2, 2), padding="same"))
     model.add(ReLU())
     model.add(BatchNormalization())

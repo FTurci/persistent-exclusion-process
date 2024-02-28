@@ -16,7 +16,7 @@ def get_plot_configs() -> dict:
         "ytick.labelsize": 12,
         "legend.fontsize": 12,
         "font.family": "serif",
-        "font.sans-serif": ["serif"],
-        "mathtext.fontset": "dejavuserif",
-        # "text.usetex": True,
+        "font.serif": "cm",
+        "mathtext.fontset": "cm",
+        "text.usetex": True,
     }
