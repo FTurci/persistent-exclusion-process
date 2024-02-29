@@ -170,3 +170,17 @@ def make_net(shape):
     model.add(Flatten())
     model.add(Dense(units=1, activation="linear"))
     return model
+
+def get_huber_loss(y_true,y_pred,clip_delta=1.0):
+    '''
+    Returns huber loss to be used as metric in convolutional neural network.
+    
+    y_true: value of y that the model aims to predict
+    y_pred: value of y that the model actually predicts
+    clip_delta: threshold beyond which huber function becomes linear
+    '''
+    error = y_true - y_pred
+    cond  = tf.keras.backend.abs(error) < clip_delta
+    squared_loss = 0.5 * tf.keras.backend.square(error)
+    linear_loss  = clip_delta * (tf.keras.backend.abs(error) - 0.5 * clip_delta)
+    return tf.where(cond, squared_loss, linear_loss)
