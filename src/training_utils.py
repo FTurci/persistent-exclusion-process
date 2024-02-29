@@ -1,4 +1,3 @@
-import contextlib
 import glob
 import re
 
@@ -7,19 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import tensorflow as tf
 from scipy.stats import pearsonr
-from tensorflow.keras.layers import (
-    BatchNormalization,
-    Conv2D,
-    Dense,
-    Dropout,
-    Flatten,
-    GlobalAveragePooling2D,
-    MaxPooling2D,
-    ReLU,
-)
-from tensorflow.keras.models import Sequential
 
 from src.plot_utils import get_plot_configs
 
@@ -84,8 +71,8 @@ def predict_and_plot(model, x_val, y_val):
     v = prediction.T[0]
 
     plot_configs = get_plot_configs()
-    plot_configs['axes.facecolor'] = [.96,.96,.96,1]
-    plot_configs['figure.facecolor'] = [.98,.98,.98,1]
+    plot_configs["axes.facecolor"] = [0.96, 0.96, 0.96, 1]
+    plot_configs["figure.facecolor"] = [0.98, 0.98, 0.98, 1]
     plt.rcParams.update(plot_configs)
     sns.set(rc=plot_configs)
 
@@ -125,62 +112,3 @@ def predict_and_plot(model, x_val, y_val):
     print("Overlap ratio:", np.sum(overlap) / len(overlap))
     print("(Min, Max, Avg) STD:", np.min(std), np.max(std), np.mean(std))
     print("Pearson's correlation coeff: ", pearsonr(y_val, v).statistic)
-
-
-@contextlib.contextmanager
-def options(options):
-    old_opts = tf.config.optimizer.get_experimental_options()
-    tf.config.optimizer.set_experimental_options(options)
-    try:
-        yield
-    finally:
-        tf.config.optimizer.set_experimental_options(old_opts)
-
-
-def make_net(shape):
-    model = Sequential()
-
-    model.add(Conv2D(filters=3, kernel_size=(3, 3), padding="same", input_shape=shape))
-    model.add(MaxPooling2D(pool_size=(2, 2), padding="same"))
-    model.add(ReLU())
-    model.add(BatchNormalization())
-
-    model.add(Conv2D(filters=4, kernel_size=(5, 5), padding="same"))
-    model.add(MaxPooling2D(pool_size=(2, 2), padding="same"))
-    model.add(ReLU())
-    model.add(BatchNormalization())
-
-    model.add(Conv2D(filters=6, kernel_size=(5, 5), padding="same"))
-    model.add(MaxPooling2D(pool_size=(2, 2), padding="same"))
-    model.add(ReLU())
-    model.add(BatchNormalization())
-
-    model.add(GlobalAveragePooling2D())
-
-    with options({"layout_optimizer": False}):
-        model.add(Dropout(0.1))
-
-    model.add(Dense(units=128, activation="relu"))
-
-    with options({"layout_optimizer": False}):
-        model.add(Dropout(0.1))
-
-    model.add(Dense(units=3, activation="relu"))
-
-    model.add(Flatten())
-    model.add(Dense(units=1, activation="linear"))
-    return model
-
-def get_huber_loss(y_true,y_pred,clip_delta=1.0):
-    '''
-    Returns huber loss to be used as metric in convolutional neural network.
-    
-    y_true: value of y that the model aims to predict
-    y_pred: value of y that the model actually predicts
-    clip_delta: threshold beyond which huber function becomes linear
-    '''
-    error = y_true - y_pred
-    cond  = tf.keras.backend.abs(error) < clip_delta
-    squared_loss = 0.5 * tf.keras.backend.square(error)
-    linear_loss  = clip_delta * (tf.keras.backend.abs(error) - 0.5 * clip_delta)
-    return tf.where(cond, squared_loss, linear_loss)
