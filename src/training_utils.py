@@ -12,6 +12,11 @@ from src.plot_utils import get_plot_configs
 
 
 def extract_floats(string):
+    '''
+    Combs through an input string and returns an array of all float numbers it finds in the string. (note: if applying to file paths, this also includes potential numbers in folder names!)
+
+    string: input string
+    '''
     return re.findall(r"[-+]?\d*\.\d+|\d+", string)
 
 
@@ -20,6 +25,13 @@ def data_load(
     densities=np.arange(0, 0.55, 0.05),
     orientation=True,
 ):
+    '''
+    Loads previously generated data files based on input parameters. Outputs an array of the imported images, their afferent inputs, and the system shape.
+
+    alphas: Desired alphas to be loaded. (float, default is a set logarithmic space in base 2)
+    densities: Desired densities to be loaded. (float, default is a set linear space in base 10)
+    orientation: Specifies whether loaded data keeps colours or not (preserves orientation and positions, or simply positions, respectively)
+    '''
     files = []
     for alp in alphas:
         for val in densities:
@@ -54,6 +66,9 @@ def data_load(
 
 
 def split_dataset(x, y, last=2000):
+    '''
+    Splits dataset into training and prediction data.
+    '''
     print("Number of unique alpha: ", len(np.unique(y)))
     print("Shape of x: ", np.shape(x))
     print("Shape of y: ", np.shape(y))
@@ -67,6 +82,9 @@ def split_dataset(x, y, last=2000):
 
 
 def predict_and_plot(model, x_val, y_val):
+    '''
+    Runs model predictions and plots them.
+    '''
     prediction = model.predict(x_val)
     v = prediction.T[0]
 
