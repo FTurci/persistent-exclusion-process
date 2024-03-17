@@ -13,11 +13,11 @@ from src.plot_utils import get_plot_configs
 
 
 def extract_floats(string):
-    '''
+    """
     Combs through an input string and returns an array of all float numbers it finds in the string. (note: if applying to file paths, this also includes potential numbers in folder names!)
 
     string: input string
-    '''
+    """
     return re.findall(r"[-+]?\d*\.\d+|\d+", string)
 
 
@@ -27,13 +27,13 @@ def data_load(
     orientation=True,
     scrambled=False,
 ):
-    '''
+    """
     Loads previously generated data files based on input parameters. Outputs an array of the imported images, their afferent inputs, and the system shape.
 
     alphas: Desired alphas to be loaded. (float, default is a set logarithmic space in base 2)
     densities: Desired densities to be loaded. (float, default is a set linear space in base 10)
     orientation: Specifies whether loaded data keeps colours or not (preserves orientation and positions, or simply positions, respectively)
-    '''
+    """
     files = []
     for alp in alphas:
         for val in densities:
@@ -70,9 +70,9 @@ def data_load(
 
 
 def split_dataset(x, y, last=2000):
-    '''
+    """
     Splits dataset into training and prediction data.
-    '''
+    """
     print("Number of unique alpha: ", len(np.unique(y)))
     print("Shape of x: ", np.shape(x))
     print("Shape of y: ", np.shape(y))
@@ -86,13 +86,13 @@ def split_dataset(x, y, last=2000):
 
 
 def predict_multi_by_name(model_names, x_val, y_val):
-    '''
-    Runs model predictions and plots them.
-    '''
+    """
+    Predict multiple models
+    """
     predictions = []
     actual = []
     for name in model_names:
-        model = tf.keras.models.load_model(f'models/{name}.keras')
+        model = tf.keras.models.load_model(f"models/{name}.keras")
         prediction = model.predict(x_val, verbose=0)
         predictions.append(prediction.T[0])
         actual.append(y_val)
@@ -100,10 +100,12 @@ def predict_multi_by_name(model_names, x_val, y_val):
 
 
 def predict_and_plot(model, x_val, y_val):
+    """
+    Runs model predictions and plots them.
+    """
     predictions = model.predict(x_val, verbose=0)
     predictions = predictions.T[0]
     plot_violin_and_statistics(predictions, y_val)
-
 
 
 def plot_violin_and_statistics(predictions, actual):
@@ -139,9 +141,25 @@ def plot_violin_and_statistics(predictions, actual):
         predictions_mapped = predictions[np.where(actual == val)]
         std.append(np.std(predictions_mapped))
         overlap.append(
-            (val + accuracy >= np.min(predictions_mapped)) & (val - accuracy <= np.max(predictions_mapped))
+            (val + accuracy >= np.min(predictions_mapped))
+            & (val - accuracy <= np.max(predictions_mapped))
         )
 
     print("Overlap ratio:", np.sum(overlap) / len(overlap))
     print("(Min, Max, Avg) STD:", np.min(std), np.max(std), np.mean(std))
     print("Pearson's correlation coeff: ", pearsonr(actual, predictions).statistic)
+
+
+def get_huber_loss(y_true, y_pred, clip_delta=1.0):
+    """
+    Returns huber loss to be used as metric in convolutional neural network.
+
+    y_true: value of y that the model aims to predict
+    y_pred: value of y that the model actually predicts
+    clip_delta: threshold beyond which huber function becomes linear
+    """
+    error = y_true - y_pred
+    cond = tf.keras.backend.abs(error) < clip_delta
+    squared_loss = 0.5 * tf.keras.backend.square(error)
+    linear_loss = clip_delta * (tf.keras.backend.abs(error) - 0.5 * clip_delta)
+    return tf.where(cond, squared_loss, linear_loss)
