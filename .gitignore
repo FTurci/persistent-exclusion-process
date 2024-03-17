@@ -5,3 +5,10 @@
 *.gif
 *.png
 *.pdf
+
+notebooks/
+models/
+cache/
+plots/
+*data/
+

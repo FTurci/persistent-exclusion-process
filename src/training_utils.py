@@ -3,6 +3,7 @@ import re
 
 import h5py
 import matplotlib.pyplot as plt
+import tensorflow as tf
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -24,6 +25,7 @@ def data_load(
     alphas=np.logspace(-6, -1, 10, base=2),
     densities=np.arange(0, 0.55, 0.05),
     orientation=True,
+    scrambled=False,
 ):
     '''
     Loads previously generated data files based on input parameters. Outputs an array of the imported images, their afferent inputs, and the system shape.
@@ -46,6 +48,8 @@ def data_load(
                 img = fin[key][:]
                 if not orientation:
                     img[img > 0] = 1
+                    if scrambled:
+                        img = img * np.random.randint(1, 5, size=(128, 128)) / 4
                 else:
                     img = img / 4
                 img = img.reshape((img.shape[0], img.shape[1], 1))
@@ -53,7 +57,7 @@ def data_load(
                 inputs.append(img)
                 outputs.append(tumble)
                 # AUGMENTATION
-                inputs.append(np.roll(img, (64, 64), axis=(0, 1)))
+                inputs.append(np.roll(img, (42, 42), axis=(0, 1)))
                 inputs.append(np.roll(img, (120, 120), axis=(0, 1)))
                 outputs.append(tumble)
                 outputs.append(tumble)
@@ -81,13 +85,28 @@ def split_dataset(x, y, last=2000):
     return x_train, y_train, x_val, y_val
 
 
-def predict_and_plot(model, x_val, y_val):
+def predict_multi_by_name(model_names, x_val, y_val):
     '''
     Runs model predictions and plots them.
     '''
-    prediction = model.predict(x_val)
-    v = prediction.T[0]
+    predictions = []
+    actual = []
+    for name in model_names:
+        model = tf.keras.models.load_model(f'models/{name}.keras')
+        prediction = model.predict(x_val, verbose=0)
+        predictions.append(prediction.T[0])
+        actual.append(y_val)
+    return np.concatenate(predictions), np.concatenate(actual)
 
+
+def predict_and_plot(model, x_val, y_val):
+    predictions = model.predict(x_val, verbose=0)
+    predictions = predictions.T[0]
+    plot_violin_and_statistics(predictions, y_val)
+
+
+
+def plot_violin_and_statistics(predictions, actual):
     plot_configs = get_plot_configs()
     plot_configs["axes.facecolor"] = [0.96, 0.96, 0.96, 1]
     plot_configs["figure.facecolor"] = [0.98, 0.98, 0.98, 1]
@@ -95,8 +114,8 @@ def predict_and_plot(model, x_val, y_val):
     sns.set(rc=plot_configs)
 
     df = pd.DataFrame()
-    df.insert(0, "predicted", np.abs(v - y_val))
-    df.insert(1, "actual", y_val)
+    df.insert(0, "predicted", predictions - actual)
+    df.insert(1, "actual", actual)
 
     fig, ax = plt.subplots(figsize=(9, 6))
     sns.violinplot(
@@ -111,22 +130,18 @@ def predict_and_plot(model, x_val, y_val):
         inner="box",
         inner_kws={"box_width": 4, "color": "0.2"},
     )
-    ax.set(xlabel=r"Tumbling rates, $\alpha$", ylabel=r"Absolute error, $|y_p - y_a|$")
+    ax.set(xlabel=r"Tumbling rates, $\alpha$", ylabel=r"Error, $y_p - y_a$")
 
     std = []
     overlap = []
     accuracy = 1e-3
-    for val in np.unique(y_val):
-        v_mapped = v[np.where(y_val == val)]
-        std.append(np.std(v_mapped))
+    for val in np.unique(actual):
+        predictions_mapped = predictions[np.where(actual == val)]
+        std.append(np.std(predictions_mapped))
         overlap.append(
-            (val + accuracy >= np.min(v_mapped)) & (val - accuracy <= np.max(v_mapped))
+            (val + accuracy >= np.min(predictions_mapped)) & (val - accuracy <= np.max(predictions_mapped))
         )
 
     print("Overlap ratio:", np.sum(overlap) / len(overlap))
     print("(Min, Max, Avg) STD:", np.min(std), np.max(std), np.mean(std))
-    print("Pearson's correlation coeff: ", pearsonr(y_val, v).statistic)
-
-    print("Overlap ratio:", np.sum(overlap) / len(overlap))
-    print("(Min, Max, Avg) STD:", np.min(std), np.max(std), np.mean(std))
-    print("Pearson's correlation coeff: ", pearsonr(y_val, v).statistic)
+    print("Pearson's correlation coeff: ", pearsonr(actual, predictions).statistic)
