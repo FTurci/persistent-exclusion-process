@@ -59,5 +59,11 @@ def get_cluster_labels(file, sshot_idx: int) -> tuple:
     iters = get_ds_iters(hf.keys())
     kernel = [[0, 1, 0], [1, 1, 1], [0, 1, 0]]
     img = hf[f"conf_{iters[sshot_idx]}"]
-    labelled, nlabels = ndimage.label(img, structure=kernel)
-    return labelled, nlabels
+    labelled, _ = ndimage.label(img, structure=kernel)
+    for y in range(labelled.shape[0]):
+        if labelled[y, 0] > 0 and labelled[y, -1] > 0:
+            labelled[labelled == labelled[y, -1]] = labelled[y, 0]
+    for y in range(labelled.shape[1]):
+        if labelled[y, 0] > 0 and labelled[y, -1] > 0:
+            labelled[labelled == labelled[y, -1]] = labelled[y, 0]
+    return labelled, len(np.unique(labelled)) - 1
