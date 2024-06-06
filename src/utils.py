@@ -2,8 +2,10 @@
 Utility functions
 """
 import re
+
 import h5py
 import numpy as np
+from scipy import ndimage
 
 
 def get_ds_iters(key_list: list) -> list:
@@ -41,3 +43,27 @@ def get_mean_orientation(file) -> list:
         ori.append(avg_ori)
         ori_acm.append(np.mean(ori))
     return ori_acm
+
+
+def get_cluster_labels(file, sshot_idx: int) -> tuple:
+    """
+    Process a snapshot with ndimage
+
+    :param file: the h5 file to open
+    :param sshot_idx: the index number to process [int]
+    :returns: [tuple] -> array of labelled clusters (same size as lattice)
+    [np.ndarray], number of labels [int]
+
+    """
+    hf = h5py.File(file, "r")
+    iters = get_ds_iters(hf.keys())
+    kernel = [[0, 1, 0], [1, 1, 1], [0, 1, 0]]
+    img = hf[f"conf_{iters[sshot_idx]}"]
+    labelled, _ = ndimage.label(img, structure=kernel)
+    for y in range(labelled.shape[0]):
+        if labelled[y, 0] > 0 and labelled[y, -1] > 0:
+            labelled[labelled == labelled[y, -1]] = labelled[y, 0]
+    for y in range(labelled.shape[1]):
+        if labelled[y, 0] > 0 and labelled[y, -1] > 0:
+            labelled[labelled == labelled[y, -1]] = labelled[y, 0]
+    return labelled, len(np.unique(labelled)) - 1

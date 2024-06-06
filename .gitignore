@@ -1,2 +1,14 @@
 .DS_Store
+**/__py_cache__/*
+*.pyc
+
+*.gif
+*.png
+*.pdf
+
+notebooks/
+models/
+cache/
+plots/
+*data/
 

@@ -9,7 +9,7 @@ using `ctypes`.
 
 ## Installation
 
-On cluster
+On cluster (BLUEPEBLLE)
 
 ```bash
 # Clone onto machine
@@ -18,7 +18,7 @@ cd persistent-exclusion-process
 
 # Prepare local environment
 mkdir data
-sh bp_env.sh
+source .env_bp
 
 # Compile the lattice ctype
 cd src/c
@@ -35,7 +35,3 @@ python3 sampler.py --density <DENSITY>
 
 Add the flag `--odd` to produce the odd set of tumbling rate. Run both with and
 without the flag to generate the full dataset.
-
-## Plotting scripts
-
-TODO
